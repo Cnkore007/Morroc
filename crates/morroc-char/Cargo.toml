@@ -1,0 +1,18 @@
+[package]
+name = "morroc-char"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+morroc-core = { path = "../morroc-core" }
+morroc-db = { path = "../morroc-db" }
+morroc-net = { path = "../morroc-net" }
+morroc-packets = { path = "../morroc-packets" }
+anyhow = "1.0"
+futures = "0.3"
+tokio = { version = "1.43", features = ["full"] }
+tracing = "0.1"

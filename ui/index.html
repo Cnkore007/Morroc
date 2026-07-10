@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Morroc</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="logo">
+        <span class="logo-icon">M</span>
+        <span class="logo-text">Morroc</span>
+      </div>
+      <nav>
+        <a href="#" class="nav-item active" data-view="dashboard">仪表盘</a>
+        <a href="#" class="nav-item" data-view="accounts">账户</a>
+        <a href="#" class="nav-item" data-view="scripts">脚本</a>
+        <a href="#" class="nav-item" data-view="logs">日志</a>
+        <a href="#" class="nav-item" data-view="settings">设置</a>
+      </nav>
+      <div class="status">
+        <span class="status-dot" id="status-dot"></span>
+        <span id="status-text">连接中...</span>
+      </div>
+    </aside>
+
+    <main class="content">
+      <header class="titlebar">
+        <h1>Morroc 服务端控制台</h1>
+      </header>
+
+      <section id="view-dashboard" class="view active">
+        <div class="panel">
+          <h2>服务控制</h2>
+          <div class="control-row">
+            <label for="mode-select">运行模式</label>
+            <select id="mode-select">
+              <option value="standalone">单实例</option>
+              <option value="distributed">分布式</option>
+            </select>
+            <button id="server-toggle" class="primary">停止</button>
+          </div>
+          <p id="server-status-text">正在初始化...</p>
+        </div>
+
+        <div class="cards">
+          <div class="card">
+            <h3>在线玩家</h3>
+            <p class="big" id="online-count">0</p>
+          </div>
+          <div class="card">
+            <h3>运行时长</h3>
+            <p class="big" id="uptime">0s</p>
+          </div>
+          <div class="card">
+            <h3>CPU</h3>
+            <p class="big" id="cpu-percent">0%</p>
+          </div>
+          <div class="card">
+            <h3>RAM</h3>
+            <p class="big" id="ram-percent">0%</p>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>服务状态</h2>
+          <p id="status-detail">正在连接后端...</p>
+        </div>
+        <div class="panel">
+          <h2>Agent</h2>
+          <p>在下方输入指令，让内置 Agent 帮你生成脚本、道具或怪物。</p>
+          <div class="chat">
+            <div class="chat-messages" id="chat-messages"></div>
+            <div class="chat-input">
+              <input type="text" id="agent-input" placeholder="例如：查询服务器状态" />
+              <button id="agent-send">发送</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-accounts" class="view">
+        <div class="panel">
+          <h2>账户管理</h2>
+          <div class="form-row">
+            <input type="text" id="new-userid" placeholder="用户名" />
+            <input type="password" id="new-password" placeholder="密码" />
+            <select id="new-sex">
+              <option value="M">男</option>
+              <option value="F">女</option>
+            </select>
+            <button id="create-account">创建</button>
+          </div>
+          <ul id="account-list" class="list"></ul>
+        </div>
+      </section>
+
+      <section id="view-scripts" class="view">
+        <div class="panel">
+          <h2>脚本编辑器</h2>
+          <p>保存 <code>scripts/</code> 目录下的 <code>.ro</code> 文件后会自动热重载。</p>
+          <div class="form-row">
+            <select id="script-select">
+              <option value="">新建脚本</option>
+            </select>
+            <input type="text" id="script-name" placeholder="脚本名（不含 .ro）" />
+            <button id="save-script">保存</button>
+          </div>
+          <textarea id="script-editor" placeholder="// 在这里编写 Morroc DSL 脚本..." spellcheck="false"></textarea>
+        </div>
+      </section>
+
+      <section id="view-logs" class="view">
+        <div class="panel">
+          <h2>服务端日志</h2>
+          <div class="log-view" id="log-viewer"><div class="log-line log-info">等待日志...</div></div>
+        </div>
+      </section>
+
+      <section id="view-settings" class="view">
+        <div class="panel">
+          <h2>设置</h2>
+          <p>LLM API 配置通过环境变量读取：</p>
+          <ul>
+            <li><code>MORROC_AGENT_API_BASE</code></li>
+            <li><code>MORROC_AGENT_API_KEY</code></li>
+            <li><code>MORROC_AGENT_MODEL</code></li>
+          </ul>
+          <p>未配置时，Agent 会在本地 fallback 模式下运行。</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

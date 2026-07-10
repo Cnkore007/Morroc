@@ -1,0 +1,7 @@
+on server_init() {
+    print("server started");
+}
+
+fn hello(name) {
+    return "hello, " + name;
+}

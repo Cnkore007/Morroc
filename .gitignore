@@ -1,0 +1,22 @@
+# Rust
+target/
+
+# Morroc runtime data
+data/
+*.db
+
+# Environment
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# Tauri
+tauri-plugin-log/
+
+# Logs
+*.log

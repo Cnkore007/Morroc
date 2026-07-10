@@ -1,0 +1,18 @@
+[package]
+name = "morroc-net"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+morroc-core = { path = "../morroc-core" }
+morroc-packets = { path = "../morroc-packets" }
+anyhow = "1.0"
+bytes = "1.10"
+futures = "0.3"
+tokio = { version = "1.43", features = ["full"] }
+tokio-util = { version = "0.7", features = ["codec"] }
+tracing = "0.1"

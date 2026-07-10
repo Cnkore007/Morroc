@@ -1,0 +1,27 @@
+[package]
+name = "morroc-daemon"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+morroc-core = { path = "../morroc-core" }
+morroc-db = { path = "../morroc-db" }
+morroc-login = { path = "../morroc-login" }
+morroc-char = { path = "../morroc-char" }
+morroc-dsl = { path = "../morroc-dsl" }
+morroc-map = { path = "../morroc-map" }
+morroc-agent = { path = "../morroc-agent" }
+morroc-packets = { path = "../morroc-packets" }
+notify = "7"
+anyhow = "1.0"
+tokio = { version = "1.43", features = ["full"] }
+tracing = "0.1"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[dev-dependencies]
+tempfile = "3"

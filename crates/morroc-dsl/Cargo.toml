@@ -1,0 +1,15 @@
+[package]
+name = "morroc-dsl"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+logos = "0.15"
+smol_str = "0.2"
+thiserror = "1.0"
+anyhow = "1.0"
+tracing = "0.1"

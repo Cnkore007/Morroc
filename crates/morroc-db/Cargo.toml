@@ -1,0 +1,16 @@
+[package]
+name = "morroc-db"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+morroc-core = { path = "../morroc-core" }
+anyhow = "1.0"
+async-trait = "0.1"
+sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "sqlite", "migrate", "macros"] }
+tokio = { version = "1.43", features = ["full"] }
+tracing = "0.1"
