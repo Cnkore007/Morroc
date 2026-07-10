@@ -339,9 +339,16 @@ impl MapInstance {
                     },
                 );
                 state.emperium_id = Some(emperium_id);
-                state
-                    .guild_state
-                    .register_zone(1, "prtg_cas01", 150, 170, 170, 190, emperium_id, 1000);
+                state.guild_state.register_zone(
+                    1,
+                    "prtg_cas01",
+                    150,
+                    170,
+                    170,
+                    190,
+                    emperium_id,
+                    1000,
+                );
             }
         }
 
@@ -492,10 +499,7 @@ impl MapInstance {
         let player_entity = state.players.get(&account_id)?.entity.clone();
         let source = player_entity.aid;
 
-        let source_modifier = state
-            .statuses
-            .get(&account_id)
-            .map(|s| s.modifier());
+        let source_modifier = state.statuses.get(&account_id).map(|s| s.modifier());
         let source_stats = entity_to_combat_stats(&player_entity, source_modifier.as_ref());
 
         let skill_info = skill
@@ -518,7 +522,13 @@ impl MapInstance {
                     skill_level,
                 )
             };
-            Self::apply_status_from_skill(&self.game_data, &mut state.statuses, target_id, tick, skill_info.as_ref());
+            Self::apply_status_from_skill(
+                &self.game_data,
+                &mut state.statuses,
+                target_id,
+                tick,
+                skill_info.as_ref(),
+            );
             let mob = state.monsters.get_mut(&target_id).unwrap();
             mob.entity.hp -= damage;
             if mob.entity.hp <= 0 {
@@ -562,9 +572,10 @@ impl MapInstance {
                 skill_level,
             );
             let attacker_guild = state.player_guilds.get(&account_id).copied();
-            let (hp, new_owner) = state
-                .guild_state
-                .damage_emperium(target_id, damage, attacker_guild);
+            let (hp, new_owner) =
+                state
+                    .guild_state
+                    .damage_emperium(target_id, damage, attacker_guild);
             if hp <= 0 {
                 if let Some(owner) = new_owner {
                     info!("WoE 区域被公会 {} 占领", owner);
@@ -677,7 +688,8 @@ impl MapInstance {
             };
             if hp_change != 0 {
                 if let Some(player) = state.players.get_mut(&id) {
-                    player.entity.hp = (player.entity.hp + hp_change).clamp(0, player.entity.max_hp);
+                    player.entity.hp =
+                        (player.entity.hp + hp_change).clamp(0, player.entity.max_hp);
                 }
             }
         }
@@ -834,18 +846,26 @@ impl MapInstance {
         skill_info: Option<&crate::combat::SkillInfo>,
     ) {
         let Some(skill) = skill_info else { return };
-        let Some(status_id) = skill.status_id else { return };
-        let Some(status) = game_data.read().unwrap().statuses.get(status_id).cloned() else { return };
-        statuses
-            .entry(target_id)
-            .or_default()
-            .apply(status, tick);
+        let Some(status_id) = skill.status_id else {
+            return;
+        };
+        let Some(status) = game_data.read().unwrap().statuses.get(status_id).cloned() else {
+            return;
+        };
+        statuses.entry(target_id).or_default().apply(status, tick);
     }
 
     /// 对指定目标施加状态效果。
     pub fn apply_status(&self, target_id: u32, status_id: u16, tick: u32) -> bool {
         let mut state = self.inner.lock().unwrap();
-        let Some(status) = self.game_data.read().unwrap().statuses.get(status_id).cloned() else {
+        let Some(status) = self
+            .game_data
+            .read()
+            .unwrap()
+            .statuses
+            .get(status_id)
+            .cloned()
+        else {
             return false;
         };
         state
@@ -867,7 +887,10 @@ impl MapInstance {
     }
 }
 
-fn entity_to_combat_stats(entity: &Entity, modifier: Option<&crate::status::StatusModifier>) -> CombatStats {
+fn entity_to_combat_stats(
+    entity: &Entity,
+    modifier: Option<&crate::status::StatusModifier>,
+) -> CombatStats {
     let m = modifier.copied().unwrap_or_default();
     CombatStats {
         level: entity.level,
@@ -1715,11 +1738,7 @@ mod tests {
         assert!(packets.is_some(), "攻击 Emperium 应返回动作包");
 
         assert_eq!(map.emperium_hp(), None, "Emperium 应被摧毁");
-        assert_eq!(
-            map.zone_owner(1),
-            Some(1),
-            "区域所有者应转为征服者公会"
-        );
+        assert_eq!(map.zone_owner(1), Some(1), "区域所有者应转为征服者公会");
     }
 
     #[test]
@@ -1801,7 +1820,9 @@ mod tests {
         let (tx, rx) = oneshot::channel();
         tokio::spawn({
             let server = server.clone();
-            async move { let _ = server.run(Some(tx)).await; }
+            async move {
+                let _ = server.run(Some(tx)).await;
+            }
         });
         let addr = rx.await.expect("服务器应发送绑定地址");
 
@@ -1856,7 +1877,6 @@ mod tests {
                 status_id: Some(3),
                 status_duration_ms: 1000,
                 status_chance: 1.0,
-                ..Default::default()
             }]),
             npcs: Vec::new(),
             statuses: StatusDatabase::load_from_str(statuses_json).unwrap(),
@@ -1872,7 +1892,9 @@ mod tests {
         let (tx, rx) = oneshot::channel();
         tokio::spawn({
             let server = server.clone();
-            async move { let _ = server.run(Some(tx)).await; }
+            async move {
+                let _ = server.run(Some(tx)).await;
+            }
         });
         let addr = rx.await.expect("服务器应发送绑定地址");
 

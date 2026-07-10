@@ -28,12 +28,10 @@ fn workspace_root() -> PathBuf {
 
 fn bin_path(name: &str) -> Option<PathBuf> {
     let env_key = format!("CARGO_BIN_EXE_{}", name);
-    std::env::var_os(&env_key)
-        .map(PathBuf::from)
-        .or_else(|| {
-            let p = workspace_root().join("target").join("debug").join(name);
-            Some(p).filter(|p| p.exists())
-        })
+    std::env::var_os(&env_key).map(PathBuf::from).or_else(|| {
+        let p = workspace_root().join("target").join("debug").join(name);
+        Some(p).filter(|p| p.exists())
+    })
 }
 
 async fn wait_for_tcp(addr: &str, deadline: Duration) -> bool {

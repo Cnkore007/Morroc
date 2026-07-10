@@ -257,7 +257,10 @@ Body:
 
         assert_eq!(data.item_count(), 1, "应从 rAthena YAML 加载 1 个道具");
         assert_eq!(data.mob_count(), 1, "应从 rAthena YAML 加载 1 个怪物");
-        assert!(data.skills.get(5).is_some(), "应从 rAthena YAML 加载 Bash 技能");
+        assert!(
+            data.skills.get(5).is_some(),
+            "应从 rAthena YAML 加载 Bash 技能"
+        );
         assert_eq!(data.get_item(502).unwrap().name, "Orange Potion");
     }
 }

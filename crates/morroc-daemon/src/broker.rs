@@ -12,8 +12,8 @@ use std::sync::Arc;
 use std::time::Duration;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
-use tokio::sync::Mutex as AsyncMutex;
 use tokio::sync::mpsc;
+use tokio::sync::Mutex as AsyncMutex;
 use tracing::{info, warn};
 
 /// 总线消息类型。
@@ -257,10 +257,7 @@ pub async fn start_service_client(
     broker_addr: SocketAddr,
 ) -> anyhow::Result<Arc<MessageClient>> {
     let client = MessageClient::connect(broker_addr).await?;
-    let topics = vec![
-        service_name.to_string(),
-        "broadcast".to_string(),
-    ];
+    let topics = vec![service_name.to_string(), "broadcast".to_string()];
     client.subscribe(&topics).await?;
     info!("{} 服务已连接消息总线，订阅 {:?}", service_name, topics);
 
@@ -357,10 +354,7 @@ mod tests {
             .unwrap();
 
         tokio::time::sleep(Duration::from_millis(100)).await;
-        assert!(
-            client.try_recv().is_none(),
-            "发布者不应收到自己发布的消息"
-        );
+        assert!(client.try_recv().is_none(), "发布者不应收到自己发布的消息");
     }
 
     #[tokio::test]

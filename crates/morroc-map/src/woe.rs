@@ -51,12 +51,7 @@ pub struct GuildState {
 
 impl GuildState {
     /// 创建公会。
-    pub fn create_guild(
-        &mut self,
-        id: u32,
-        name: impl Into<String>,
-        master_account_id: u32,
-    ) {
+    pub fn create_guild(&mut self, id: u32, name: impl Into<String>, master_account_id: u32) {
         self.guilds.insert(
             id,
             Guild {
@@ -69,6 +64,7 @@ impl GuildState {
     }
 
     /// 注册 WoE 区域。
+    #[allow(clippy::too_many_arguments)]
     pub fn register_zone(
         &mut self,
         id: u32,
@@ -109,8 +105,7 @@ impl GuildState {
     }
 
     /// 根据攻城器实体 ID 查找所属区域。
-    pub fn find_zone_by_emperium(&self, emperium_id: u32,
-    ) -> Option<&WoEZone> {
+    pub fn find_zone_by_emperium(&self, emperium_id: u32) -> Option<&WoEZone> {
         self.zones
             .values()
             .find(|z| z.emperium_entity_id == emperium_id)
@@ -135,10 +130,7 @@ impl GuildState {
             .unwrap_or(0);
 
         if hp <= 0 {
-            if let Some(zone_id) = self
-                .find_zone_by_emperium(emperium_id)
-                .map(|z| z.id)
-            {
+            if let Some(zone_id) = self.find_zone_by_emperium(emperium_id).map(|z| z.id) {
                 if let Some(guild_id) = attacker_guild_id {
                     self.set_zone_owner(zone_id, Some(guild_id));
                     return (0, Some(guild_id));

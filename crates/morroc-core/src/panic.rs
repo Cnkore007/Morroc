@@ -134,7 +134,7 @@ mod tests {
             panic!("测试崩溃");
         }
 
-        let result = catch_unwind(|| trigger_panic());
+        let result = catch_unwind(trigger_panic);
         assert!(result.is_err(), "panic 应被 catch_unwind 捕获");
 
         let entries: Vec<_> = fs::read_dir(dir).unwrap().filter_map(|e| e.ok()).collect();

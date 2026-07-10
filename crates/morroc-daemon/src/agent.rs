@@ -155,7 +155,9 @@ impl ToolExecutor for AgentContext {
                         return Err(anyhow::anyhow!("name 不能为空"));
                     }
                     match map_server.map.spawn_dynamic_npc(name, x, y, sprite) {
-                        Some(id) => Ok(serde_json::json!({ "npc_id": id, "name": name, "x": x, "y": y })),
+                        Some(id) => {
+                            Ok(serde_json::json!({ "npc_id": id, "name": name, "x": x, "y": y }))
+                        }
                         None => Err(anyhow::anyhow!("生成 NPC 失败")),
                     }
                 }
@@ -377,7 +379,9 @@ fn mutate_item(
     id_value: &JsonValue,
     properties: &JsonMap<String, JsonValue>,
 ) -> anyhow::Result<JsonValue> {
-    let id = id_value.as_i64().ok_or_else(|| anyhow::anyhow!("id 应为整数"))?;
+    let id = id_value
+        .as_i64()
+        .ok_or_else(|| anyhow::anyhow!("id 应为整数"))?;
     let mut data = map.game_data_mut();
     let updated = data.update_item(id, |item| {
         for (k, v) in properties {
@@ -656,7 +660,10 @@ mod tests {
             map_server,
         );
 
-        let result = ctx.execute("query_map_state", &JsonValue::Null).await.unwrap();
+        let result = ctx
+            .execute("query_map_state", &JsonValue::Null)
+            .await
+            .unwrap();
         assert_eq!(result["name"], "prontera");
         assert!(result["npc_count"].as_u64().unwrap() >= 2);
     }
@@ -678,7 +685,10 @@ mod tests {
             map_server.clone(),
         );
 
-        let before = ctx.execute("query_map_state", &JsonValue::Null).await.unwrap();
+        let before = ctx
+            .execute("query_map_state", &JsonValue::Null)
+            .await
+            .unwrap();
         let before_npcs = before["npc_count"].as_u64().unwrap();
 
         let args = serde_json::json!({
@@ -690,7 +700,10 @@ mod tests {
         let result = ctx.execute("spawn_dynamic_npc", &args).await.unwrap();
         assert!(result["npc_id"].as_u64().is_some());
 
-        let after = ctx.execute("query_map_state", &JsonValue::Null).await.unwrap();
+        let after = ctx
+            .execute("query_map_state", &JsonValue::Null)
+            .await
+            .unwrap();
         assert_eq!(after["npc_count"].as_u64().unwrap(), before_npcs + 1);
         assert!(after["npcs"]
             .as_array()
@@ -714,7 +727,10 @@ mod tests {
             Arc::new(morroc_db::LocalSessionStore::new()),
             morroc_map::MapServer::new_empty_sessions("127.0.0.1:0".parse().unwrap()),
         );
-        let result = ctx.execute("describe_ontology", &JsonValue::Null).await.unwrap();
+        let result = ctx
+            .execute("describe_ontology", &JsonValue::Null)
+            .await
+            .unwrap();
         let classes = result["classes"].as_array().unwrap();
         assert!(classes.iter().any(|c| c["name"] == "Item"));
         assert!(classes.iter().any(|c| c["name"] == "Npc"));
@@ -738,7 +754,10 @@ mod tests {
             map_server.clone(),
         );
 
-        let before = ctx.execute("query_map_state", &JsonValue::Null).await.unwrap();
+        let before = ctx
+            .execute("query_map_state", &JsonValue::Null)
+            .await
+            .unwrap();
         assert_eq!(before["item_count"].as_u64().unwrap(), 0);
 
         let args = serde_json::json!({
@@ -753,7 +772,10 @@ mod tests {
         assert_eq!(result["id"], 99001);
         assert_eq!(result["item_count"], 1);
 
-        let after = ctx.execute("query_map_state", &JsonValue::Null).await.unwrap();
+        let after = ctx
+            .execute("query_map_state", &JsonValue::Null)
+            .await
+            .unwrap();
         assert_eq!(after["item_count"].as_u64().unwrap(), 1);
 
         let data = map_server.map.game_data();
@@ -831,10 +853,12 @@ mod tests {
             }
         });
         ctx.execute("mutate_entity", &item_args).await.unwrap();
-        let data = map_server.map.game_data();
-        let item = data.get_item(99003).unwrap();
-        assert_eq!(item.atk, Some(5));
-        assert_eq!(item.buy, Some(1000));
+        {
+            let data = map_server.map.game_data();
+            let item = data.get_item(99003).unwrap();
+            assert_eq!(item.atk, Some(5));
+            assert_eq!(item.buy, Some(1000));
+        }
 
         let npc_args = serde_json::json!({
             "class": "Npc",

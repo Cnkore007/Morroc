@@ -9,7 +9,7 @@ use std::path::Path;
 use tracing::warn;
 
 /// 状态类型。
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Default)]
 #[serde(rename_all = "snake_case")]
 pub enum StatusKind {
     /// 增益。
@@ -17,13 +17,8 @@ pub enum StatusKind {
     /// 减益。
     Debuff,
     /// 其他。
+    #[default]
     Neutral,
-}
-
-impl Default for StatusKind {
-    fn default() -> Self {
-        StatusKind::Neutral
-    }
 }
 
 /// 状态对战斗属性的修正。
@@ -150,7 +145,8 @@ impl StatusState {
                 continue;
             }
             if active.effect.modifier.hp_per_tick != 0 && now >= active.next_tick {
-                total_hp_change = total_hp_change.saturating_add(active.effect.modifier.hp_per_tick);
+                total_hp_change =
+                    total_hp_change.saturating_add(active.effect.modifier.hp_per_tick);
                 active.next_tick = active
                     .next_tick
                     .saturating_add(active.effect.modifier.tick_interval_ms.max(1));

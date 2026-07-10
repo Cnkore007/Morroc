@@ -57,18 +57,19 @@ struct SystemMetrics {
 
 fn build_status(state: &ServerState) -> ServerStatus {
     let running = state.is_running();
-    let mode = state.mode.lock().unwrap().clone();
+    let mode = *state.mode.lock().unwrap();
     let uptime_seconds = state
         .start_time
         .lock()
         .unwrap()
         .map(|t| t.elapsed().as_secs())
         .unwrap_or(0);
-    let (accounts, sessions, addresses) = if let Some(app) = state.app_state.lock().unwrap().as_ref() {
-        (0, 0, app.listen_addresses())
-    } else {
-        (0, 0, Vec::new())
-    };
+    let (accounts, sessions, addresses) =
+        if let Some(app) = state.app_state.lock().unwrap().as_ref() {
+            (0, 0, app.listen_addresses())
+        } else {
+            (0, 0, Vec::new())
+        };
     ServerStatus {
         running,
         mode: format!("{:?}", mode).to_lowercase(),
@@ -121,7 +122,7 @@ fn dist_bin_path(name: &str) -> std::path::PathBuf {
         "target/release"
     };
     let mut path = std::path::Path::new(dir).join(name);
-    if std::env::consts::EXE_SUFFIX != "" {
+    if !std::env::consts::EXE_SUFFIX.is_empty() {
         let name = path.file_name().unwrap().to_string_lossy().to_string();
         path.set_file_name(format!("{}{}", name, std::env::consts::EXE_SUFFIX));
     }
@@ -168,18 +169,16 @@ async fn start_server(
     *state.mode.lock().unwrap() = mode;
 
     match mode {
-        RunMode::Standalone => {
-            match morroc_daemon::start_services().await {
-                Ok(manager) => {
-                    let app_state = manager.state.clone();
-                    *state.manager.lock().unwrap() = Some(manager);
-                    *state.app_state.lock().unwrap() = Some(app_state);
-                    *state.start_time.lock().unwrap() = Some(std::time::Instant::now());
-                    info!("Morroc 单实例服务已启动");
-                }
-                Err(e) => return Err(format!("启动服务失败: {}", e)),
+        RunMode::Standalone => match morroc_daemon::start_services().await {
+            Ok(manager) => {
+                let app_state = manager.state.clone();
+                *state.manager.lock().unwrap() = Some(manager);
+                *state.app_state.lock().unwrap() = Some(app_state);
+                *state.start_time.lock().unwrap() = Some(std::time::Instant::now());
+                info!("Morroc 单实例服务已启动");
             }
-        }
+            Err(e) => return Err(format!("启动服务失败: {}", e)),
+        },
         RunMode::Distributed | RunMode::Headless => {
             let mut children = Vec::new();
             children.push(spawn_dist_bin("message_broker")?);
@@ -215,13 +214,21 @@ async fn agent_chat(
         let guard = state.app_state.lock().unwrap();
         guard.clone().ok_or("服务未运行")?
     };
-    app_state.agent_chat(&message).await.map_err(|e| e.to_string())
+    app_state
+        .agent_chat(&message)
+        .await
+        .map_err(|e| e.to_string())
 }
 
 /// 列出所有 `.ro` 脚本文件名。
 #[tauri::command]
 fn list_scripts(state: tauri::State<'_, ServerState>) -> Result<Vec<String>, String> {
-    let app_state = state.app_state.lock().unwrap().clone().ok_or("服务未运行")?;
+    let app_state = state
+        .app_state
+        .lock()
+        .unwrap()
+        .clone()
+        .ok_or("服务未运行")?;
     app_state.list_scripts().map_err(|e| e.to_string())
 }
 
@@ -231,7 +238,12 @@ fn load_script(
     state: tauri::State<'_, ServerState>,
     name: String,
 ) -> Result<Option<String>, String> {
-    let app_state = state.app_state.lock().unwrap().clone().ok_or("服务未运行")?;
+    let app_state = state
+        .app_state
+        .lock()
+        .unwrap()
+        .clone()
+        .ok_or("服务未运行")?;
     app_state.load_script(&name).map_err(|e| e.to_string())
 }
 
@@ -242,7 +254,12 @@ fn save_script(
     name: String,
     content: String,
 ) -> Result<(), String> {
-    let app_state = state.app_state.lock().unwrap().clone().ok_or("服务未运行")?;
+    let app_state = state
+        .app_state
+        .lock()
+        .unwrap()
+        .clone()
+        .ok_or("服务未运行")?;
     app_state
         .save_script(&name, &content)
         .map_err(|e| e.to_string())
@@ -250,10 +267,13 @@ fn save_script(
 
 /// 列出所有账户用户名。
 #[tauri::command]
-async fn list_accounts(
-    state: tauri::State<'_, ServerState>,
-) -> Result<Vec<String>, String> {
-    let app_state = state.app_state.lock().unwrap().clone().ok_or("服务未运行")?;
+async fn list_accounts(state: tauri::State<'_, ServerState>) -> Result<Vec<String>, String> {
+    let app_state = state
+        .app_state
+        .lock()
+        .unwrap()
+        .clone()
+        .ok_or("服务未运行")?;
     app_state.list_accounts().await.map_err(|e| e.to_string())
 }
 
@@ -265,7 +285,12 @@ async fn create_account(
     password: String,
     sex: String,
 ) -> Result<i64, String> {
-    let app_state = state.app_state.lock().unwrap().clone().ok_or("服务未运行")?;
+    let app_state = state
+        .app_state
+        .lock()
+        .unwrap()
+        .clone()
+        .ok_or("服务未运行")?;
     app_state
         .create_account(&userid, &password, &sex)
         .await
@@ -275,7 +300,12 @@ async fn create_account(
 /// 返回当前地图状态快照。
 #[tauri::command]
 fn get_map_state(state: tauri::State<'_, ServerState>) -> Result<Value, String> {
-    let app_state = state.app_state.lock().unwrap().clone().ok_or("服务未运行")?;
+    let app_state = state
+        .app_state
+        .lock()
+        .unwrap()
+        .clone()
+        .ok_or("服务未运行")?;
     Ok(app_state.map_state())
 }
 
@@ -334,10 +364,7 @@ struct MessageVisitor {
 }
 
 impl tracing::field::Visit for MessageVisitor {
-    fn record_debug(&mut self,
-        field: &tracing::field::Field,
-        value: &dyn std::fmt::Debug,
-    ) {
+    fn record_debug(&mut self, field: &tracing::field::Field, value: &dyn std::fmt::Debug) {
         if field.name() == "message" {
             self.message = format!("{:?}", value);
         } else {
@@ -354,10 +381,7 @@ impl tracing::field::Visit for MessageVisitor {
         }
     }
 
-    fn record_str(&mut self,
-        field: &tracing::field::Field,
-        value: &str,
-    ) {
+    fn record_str(&mut self, field: &tracing::field::Field, value: &str) {
         if field.name() == "message" {
             self.message = value.to_string();
         } else {
@@ -423,18 +447,7 @@ pub fn run() {
         if let tauri::RunEvent::ExitRequested { .. } = event {
             if let Some(state) = handle.try_state::<Arc<ServerState>>() {
                 let state = state.inner();
-                if let Some(manager) = state.manager.lock().unwrap().take() {
-                    manager.shutdown();
-                }
-                let mut children: Vec<Child> = {
-                    let mut guard = state.distributed_children.lock().unwrap();
-                    std::mem::take(&mut *guard)
-                };
-                *state.start_time.lock().unwrap() = None;
-                for child in children.iter_mut() {
-                    let _ = child.start_kill();
-                    let _ = child.wait();
-                }
+                let _ = tauri::async_runtime::block_on(stop_server_inner(state));
                 info!("Morroc 服务端已收到关闭请求");
             }
         }

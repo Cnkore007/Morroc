@@ -362,10 +362,7 @@ fn convert_extra(group: &HashMap<String, Value>) -> HashMap<String, serde_json::
     group
         .iter()
         .filter(|(k, _)| !known.contains(*k))
-        .filter_map(|(k, v)| match libconfig_to_json(v) {
-            Some(jv) => Some((k.clone(), jv)),
-            None => None,
-        })
+        .filter_map(|(k, v)| libconfig_to_json(v).map(|jv| (k.clone(), jv)))
         .collect()
 }
 

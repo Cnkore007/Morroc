@@ -24,7 +24,8 @@ async fn main() -> anyhow::Result<()> {
 
     let sessions: Arc<dyn morroc_db::SessionStore> = Arc::new(db.clone());
     let game_data = GameData::load_from_json("data/database.json")?;
-    let map_server = morroc_map::MapServer::new(cfg.map.listen.parse()?, sessions, game_data, true, true);
+    let map_server =
+        morroc_map::MapServer::new(cfg.map.listen.parse()?, sessions, game_data, true, true);
     map_server.run(None).await?;
 
     Ok(())

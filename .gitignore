@@ -33,3 +33,6 @@ converted/
 # Runtime crash reports
 src-tauri/crashes/
 
+# External data sources (large, refreshed on demand)
+vendor/rathena/
+
