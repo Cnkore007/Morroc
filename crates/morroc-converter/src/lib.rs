@@ -277,7 +277,8 @@ mod tests {
     #[test]
     fn parse_hercules_item_db() {
         let source = std::fs::read_to_string(
-            "/Users/kimmy/Documents/Morroc/vendor/hercules/db/re/item_db.conf",
+            std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .join("../../vendor/hercules/db/re/item_db.conf"),
         )
         .unwrap();
         let doc = libconfig::parse(&source).unwrap();
@@ -289,7 +290,8 @@ mod tests {
     #[test]
     fn parse_hercules_mob_db() {
         let source = std::fs::read_to_string(
-            "/Users/kimmy/Documents/Morroc/vendor/hercules/db/re/mob_db.conf",
+            std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .join("../../vendor/hercules/db/re/mob_db.conf"),
         )
         .unwrap();
         let doc = libconfig::parse(&source).unwrap();
@@ -301,7 +303,8 @@ mod tests {
     #[test]
     fn parse_hercules_skill_db() {
         let source = std::fs::read_to_string(
-            "/Users/kimmy/Documents/Morroc/vendor/hercules/db/re/skill_db.conf",
+            std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .join("../../vendor/hercules/db/re/skill_db.conf"),
         )
         .unwrap();
         let doc = libconfig::parse(&source).unwrap();
@@ -312,9 +315,11 @@ mod tests {
 
     #[test]
     fn convert_hercules_database_dir() {
-        let db = convert_database_dir(std::path::Path::new(
-            "/Users/kimmy/Documents/Morroc/vendor/hercules/db/re",
-        ))
+        let db = convert_database_dir(
+            std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .join("../../vendor/hercules/db/re")
+                .as_path(),
+        )
         .unwrap();
         assert!(!db.items.is_empty(), "应至少解析一个道具");
         assert!(!db.mobs.is_empty(), "应至少解析一个怪物");
@@ -323,9 +328,11 @@ mod tests {
 
     #[test]
     fn convert_hercules_full() {
-        let db = convert_hercules(std::path::Path::new(
-            "/Users/kimmy/Documents/Morroc/vendor/hercules",
-        ))
+        let db = convert_hercules(
+            std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .join("../../vendor/hercules")
+                .as_path(),
+        )
         .unwrap();
         assert!(!db.items.is_empty(), "应至少解析一个道具");
         assert!(!db.mobs.is_empty(), "应至少解析一个怪物");

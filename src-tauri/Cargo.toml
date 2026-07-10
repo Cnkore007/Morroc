@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Morroc - High-performance Ragnarok Online server emulator"
 authors = ["Morroc Team"]
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/Morroc/Morroc"
+repository = "https://github.com/Cnkore007/Morroc"
 edition = "2021"
 rust-version = "1.77.2"
 
