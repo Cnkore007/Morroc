@@ -20,3 +20,16 @@ tauri-plugin-log/
 
 # Logs
 *.log
+
+# ZCode internal plans
+.zcode/
+
+# Project docs / prompts (keep local, don't publish)
+docs/
+
+# Generated conversion artifacts
+converted/
+
+# Runtime crash reports
+src-tauri/crashes/
+
