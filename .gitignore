@@ -34,5 +34,9 @@ converted/
 src-tauri/crashes/
 
 # External data sources (large, refreshed on demand)
-vendor/rathena/
+vendor/
+
+# CI / private AI rules
+.github/
+AGENTS.md
 
