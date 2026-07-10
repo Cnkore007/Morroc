@@ -1,12 +1,13 @@
 //! Morroc 包协议定义。
 //!
-//! 包长度表、密钥等数据从 Hercules 源文件生成。
+//! 包长度表、密钥等数据以静态表形式维护，便于支持多版本切换。
 
 pub mod char;
+pub mod lengths;
 pub mod login;
 pub mod map;
 
-include!(concat!(env!("OUT_DIR"), "/lengths.rs"));
+pub use lengths::{packet_len, CRYPTO_KEYS};
 
 #[cfg(test)]
 mod tests {

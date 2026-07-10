@@ -1,4 +1,4 @@
-//! 登录相关包结构（基于 Hercules 20190530 main 版本）。
+//! 登录相关包结构（基于 RO 20190530 main 版本）。
 
 use bytes::{Buf, BufMut, BytesMut};
 

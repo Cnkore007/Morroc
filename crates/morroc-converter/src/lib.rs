@@ -1,11 +1,11 @@
 //! Morroc Converter
 //!
-//! 将 Hercules/rAthena 的 `.conf` 数据库和 NPC 脚本转换为 Rust 友好的 JSON/TOML/AST。
+//! 将 legacy `.conf` 数据库、YAML 数据库以及 NPC 脚本转换为 Rust 友好的 JSON/TOML/AST。
 
 pub mod libconfig;
 pub mod npc;
-pub mod rathena;
 pub mod schema;
+pub mod yaml_db;
 
 use anyhow::Context;
 use schema::{GameDatabase, Item, Mob, Skill};
@@ -19,7 +19,7 @@ use crate::npc::NpcFile;
 
 pub use libconfig::ParseError;
 
-/// 解析 Hercules 数据库目录，转换 item/mob/skill 数据库。
+/// 解析 legacy config 数据库目录，转换 item/mob/skill 数据库。
 ///
 /// 默认读取 `db/re/` 下的 `item_db.conf`、`mob_db.conf`、`skill_db.conf`。
 /// 如果找不到 `db/re`，会回退到 `db/pre-re/` 或指定的目录。
@@ -53,14 +53,14 @@ pub fn convert_database_dir(db_dir: &Path) -> anyhow::Result<GameDatabase> {
     Ok(db)
 }
 
-/// 从 Hercules 仓库根目录自动定位数据库，并扫描 NPC 脚本目录。
-pub fn convert_hercules(hercules_dir: &Path) -> anyhow::Result<GameDatabase> {
-    let re = hercules_dir.join("db/re");
-    let pre = hercules_dir.join("db/pre-re");
+/// 从 legacy config 仓库根目录自动定位数据库，并扫描 NPC 脚本目录。
+pub fn convert_legacy_db(legacy_dir: &Path) -> anyhow::Result<GameDatabase> {
+    let re = legacy_dir.join("db/re");
+    let pre = legacy_dir.join("db/pre-re");
     let db_dir = if re.exists() { re } else { pre };
     let mut db = convert_database_dir(&db_dir)?;
 
-    let npc_dir = hercules_dir.join("npc");
+    let npc_dir = legacy_dir.join("npc");
     if npc_dir.exists() {
         db.npcs = convert_npc_dir(&npc_dir)?;
     }
@@ -275,10 +275,10 @@ mod tests {
     }
 
     #[test]
-    fn parse_hercules_item_db() {
+    fn parse_legacy_item_db() {
         let source = std::fs::read_to_string(
             std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-                .join("../../vendor/hercules/db/re/item_db.conf"),
+                .join("../../vendor/legacy/db/re/item_db.conf"),
         )
         .unwrap();
         let doc = libconfig::parse(&source).unwrap();
@@ -288,10 +288,10 @@ mod tests {
     }
 
     #[test]
-    fn parse_hercules_mob_db() {
+    fn parse_legacy_mob_db() {
         let source = std::fs::read_to_string(
             std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-                .join("../../vendor/hercules/db/re/mob_db.conf"),
+                .join("../../vendor/legacy/db/re/mob_db.conf"),
         )
         .unwrap();
         let doc = libconfig::parse(&source).unwrap();
@@ -301,10 +301,10 @@ mod tests {
     }
 
     #[test]
-    fn parse_hercules_skill_db() {
+    fn parse_legacy_skill_db() {
         let source = std::fs::read_to_string(
             std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-                .join("../../vendor/hercules/db/re/skill_db.conf"),
+                .join("../../vendor/legacy/db/re/skill_db.conf"),
         )
         .unwrap();
         let doc = libconfig::parse(&source).unwrap();
@@ -314,10 +314,10 @@ mod tests {
     }
 
     #[test]
-    fn convert_hercules_database_dir() {
+    fn convert_legacy_database_dir() {
         let db = convert_database_dir(
             std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-                .join("../../vendor/hercules/db/re")
+                .join("../../vendor/legacy/db/re")
                 .as_path(),
         )
         .unwrap();
@@ -327,10 +327,10 @@ mod tests {
     }
 
     #[test]
-    fn convert_hercules_full() {
-        let db = convert_hercules(
+    fn convert_legacy_full() {
+        let db = convert_legacy_db(
             std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-                .join("../../vendor/hercules")
+                .join("../../vendor/legacy")
                 .as_path(),
         )
         .unwrap();

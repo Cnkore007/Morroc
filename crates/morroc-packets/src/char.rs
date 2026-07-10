@@ -14,7 +14,7 @@ const CHAR_NAME_SIZE: usize = 24;
 
 /// 客户端进入角色服务器请求 CH_ENTER（0x0065）。
 ///
-/// 注意：Hercules 20190530 长度表定义该包总长度为 17，因此 payload 为 15 字节，
+/// 注意：RO 20190530 长度表定义该包总长度为 17，因此 payload 为 15 字节，
 /// client_tick 使用 u16 以匹配该长度。
 #[derive(Debug, Clone)]
 pub struct ChEnter {

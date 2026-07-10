@@ -34,7 +34,7 @@ const NAME_LENGTH: usize = 24;
 
 /// 经典客户端进入地图服务器请求 CZ_ENTER（0x0072）。
 ///
-/// Hercules 2019 主长度表定义该包总长度为 22，payload 为 20 字节。
+/// RO 2019 主长度表定义该包总长度为 22，payload 为 20 字节。
 /// 字段顺序：account_id, char_id, auth_code, client_tick, sex；sex 后存在 3 字节填充。
 #[derive(Debug, Clone)]
 pub struct CzEnter {

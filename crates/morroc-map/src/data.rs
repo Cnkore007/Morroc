@@ -196,8 +196,8 @@ mod tests {
     }
 
     #[test]
-    fn game_data_loads_from_rathena_yaml() {
-        use morroc_converter::rathena;
+    fn game_data_loads_from_yaml() {
+        use morroc_converter::yaml_db;
         let dir = tempfile::tempdir().unwrap();
 
         std::fs::write(
@@ -251,16 +251,13 @@ Body:
         )
         .unwrap();
 
-        let db = rathena::convert_database_dir(dir.path()).unwrap();
+        let db = yaml_db::convert_database_dir(dir.path()).unwrap();
         let json = serde_json::to_string(&db).unwrap();
         let data = GameData::load_from_str(&json).unwrap();
 
-        assert_eq!(data.item_count(), 1, "应从 rAthena YAML 加载 1 个道具");
-        assert_eq!(data.mob_count(), 1, "应从 rAthena YAML 加载 1 个怪物");
-        assert!(
-            data.skills.get(5).is_some(),
-            "应从 rAthena YAML 加载 Bash 技能"
-        );
+        assert_eq!(data.item_count(), 1, "应从 YAML 加载 1 个道具");
+        assert_eq!(data.mob_count(), 1, "应从 YAML 加载 1 个怪物");
+        assert!(data.skills.get(5).is_some(), "应从 YAML 加载 Bash 技能");
         assert_eq!(data.get_item(502).unwrap().name, "Orange Potion");
     }
 }

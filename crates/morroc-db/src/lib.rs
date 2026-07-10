@@ -40,6 +40,13 @@ impl Database {
             if let Some(parent) = path.parent() {
                 std::fs::create_dir_all(parent)?;
             }
+            if !path.exists() {
+                std::fs::OpenOptions::new()
+                    .create(true)
+                    .write(true)
+                    .truncate(false)
+                    .open(&path)?;
+            }
             format!("sqlite://{}", path.display())
         };
         info!("正在连接 SQLite 数据库: {}", url);

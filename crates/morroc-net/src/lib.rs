@@ -1,6 +1,6 @@
 //! Morroc 网络层：TCP 会话、包编解码。
 //!
-//! 当前实现基于 Hercules 20190530 main 的包长度表。后续会扩展为多版本。
+//! 当前实现基于 RO 20190530 main 的包长度表。后续会扩展为多版本。
 
 use bytes::{Buf, BufMut, BytesMut};
 use futures::StreamExt;

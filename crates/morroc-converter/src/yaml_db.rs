@@ -1,18 +1,18 @@
-//! rAthena YAML 数据库解析器。
+//! YAML 数据库解析器。
 //!
-//! 支持 rAthena 的 `item_db*.yml`、`mob_db*.yml`、`skill_db*.yml` 格式：
+//! 支持 YAML 的 `item_db*.yml`、`mob_db*.yml`、`skill_db*.yml` 格式：
 //! 顶层为 `Header` / `Body` 结构，其中 `Body` 是记录列表。
-//! rAthena 将道具按用途拆分为多个文件（如 item_db_usable.yml、item_db_equip.yml 等），
+//! YAML 将道具按用途拆分为多个文件（如 item_db_usable.yml、item_db_equip.yml 等），
 //! 本函数会把主文件（item_db.yml）与所有 `prefix_*.yml` 合并。
 //!
-//! 使用 `yaml-rust2` 作为底层解析器，允许 YAML 映射中出现重复键（rAthena 中常见，后值覆盖前值）。
+//! 使用 `yaml-rust2` 作为底层解析器，允许 YAML 映射中出现重复键（YAML 中常见，后值覆盖前值）。
 
 use crate::schema::{GameDatabase, Item, Mob, Skill};
 use serde_json::Value;
 use std::collections::HashMap;
 use yaml_rust2::{Yaml, YamlLoader};
 
-/// 解析 rAthena YAML 数据库目录，读取 `item_db*.yml`、`mob_db*.yml`、`skill_db*.yml`。
+/// 解析 YAML 数据库目录，读取 `item_db*.yml`、`mob_db*.yml`、`skill_db*.yml`。
 pub fn convert_database_dir(db_dir: &std::path::Path) -> anyhow::Result<GameDatabase> {
     let db = GameDatabase {
         items: parse_all_yaml(db_dir, "item_db", parse_items)?,
@@ -90,7 +90,7 @@ fn load_yaml(source: &str) -> anyhow::Result<Yaml> {
 
 /// 单遍扫描 YAML 并删除重复键的前一次出现块。
 ///
-/// rAthena 数据库中同一映射内偶尔出现重复键（后值覆盖前值）。yaml-rust2 默认会
+/// YAML 数据库中同一映射内偶尔出现重复键（后值覆盖前值）。yaml-rust2 默认会
 /// 报错，因此本函数在解析前按路径去重：先遍历一次文本，为每个键建立“路径”
 /// （Body / 列表索引 / 映射键 的序列），同一路径出现多次时只保留最后一次。
 fn deduplicate_yaml(source: &str) -> String {
@@ -579,7 +579,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn parse_rathena_item_db() {
+    fn parse_yaml_item_db() {
         let source = r#"
 Header:
   Version: 1
@@ -610,7 +610,7 @@ Body:
     }
 
     #[test]
-    fn parse_rathena_mob_db() {
+    fn parse_yaml_mob_db() {
         let source = r#"
 Body:
   - Id: 1001
@@ -657,7 +657,7 @@ Body:
     }
 
     #[test]
-    fn parse_rathena_skill_db() {
+    fn parse_yaml_skill_db() {
         let source = r#"
 Body:
   - Id: 5
@@ -675,7 +675,7 @@ Body:
     }
 
     #[test]
-    fn parse_rathena_database_dir() {
+    fn parse_yaml_database_dir() {
         let dir = tempfile::tempdir().unwrap();
         let item = dir.path().join("item_db.yml");
         std::fs::write(
@@ -722,7 +722,7 @@ Body:
     }
 
     #[test]
-    fn parse_rathena_split_item_db() {
+    fn parse_yaml_split_item_db() {
         let dir = tempfile::tempdir().unwrap();
         let main = dir.path().join("item_db.yml");
         std::fs::write(&main, "# header only\n").unwrap();
@@ -760,7 +760,7 @@ Body:
 
     #[test]
     fn parse_duplicate_yaml_keys() {
-        // rAthena 中同一映射内出现重复键时，后值覆盖前值。
+        // YAML 中同一映射内出现重复键时，后值覆盖前值。
         let source = r#"
 Body:
   - Id: 400276

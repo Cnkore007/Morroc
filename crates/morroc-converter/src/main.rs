@@ -1,7 +1,7 @@
 //! Morroc Converter CLI
 //!
 //! 用法：
-//!   morroc-converter --hercules /path/to/hercules --out-dir ./converted
+//!   morroc-converter --legacy-db /path/to/legacy --out-dir ./converted
 //!   morroc-converter --db /path/to/db/re --npc /path/to/npc/file.txt --out-dir ./converted
 //!   morroc-converter --input-dir /path/to/source --out-dir ./converted
 
@@ -14,13 +14,13 @@ use tracing::info;
 #[derive(Parser, Debug)]
 #[command(name = "morroc-converter", about = "Morroc 数据与脚本转换器")]
 struct Cli {
-    /// Hercules 源码根目录。
+    /// Legacy config 数据库源码根目录。
     #[arg(long, value_name = "DIR")]
-    hercules: Option<PathBuf>,
+    legacy_db: Option<PathBuf>,
 
-    /// rAthena 源码根目录（含 db/item_db.yml 等）。
+    /// YAML 数据库源码根目录（含 db/item_db.yml 等）。
     #[arg(long, value_name = "DIR")]
-    rathena: Option<PathBuf>,
+    yaml_db: Option<PathBuf>,
 
     /// 数据库目录（item_db.conf 等所在目录）。
     #[arg(long, value_name = "DIR")]
@@ -30,7 +30,7 @@ struct Cli {
     #[arg(long, value_name = "FILE")]
     npc: Option<PathBuf>,
 
-    /// 统一输入目录（自动检测 Hercules / rAthena / 数据库 / NPC）。
+    /// 统一输入目录（自动检测 legacy config / YAML 数据库 / NPC）。
     #[arg(long, value_name = "DIR")]
     input_dir: Option<PathBuf>,
 
@@ -52,23 +52,23 @@ fn main() -> anyhow::Result<()> {
 
     // 来源选项互斥检查。
     let source_flags = [
-        cli.hercules.is_some(),
-        cli.rathena.is_some(),
+        cli.legacy_db.is_some(),
+        cli.yaml_db.is_some(),
         cli.db.is_some(),
         cli.npc.is_some(),
         cli.input_dir.is_some(),
     ];
     let count = source_flags.iter().filter(|&&b| b).count();
     if count == 0 {
-        anyhow::bail!("必须指定 --hercules、--rathena、--db、--npc 或 --input-dir 之一");
+        anyhow::bail!("必须指定 --legacy-db、--yaml-db、--db、--npc 或 --input-dir 之一");
     }
     if count > 1 {
-        anyhow::bail!("--hercules、--rathena、--db、--npc、--input-dir 只能指定一个");
+        anyhow::bail!("--legacy-db、--yaml-db、--db、--npc、--input-dir 只能指定一个");
     }
 
-    if let Some(hercules) = &cli.hercules {
-        info!("从 Hercules 目录转换: {}", hercules.display());
-        let db = morroc_converter::convert_hercules(hercules)?;
+    if let Some(legacy_db) = &cli.legacy_db {
+        info!("从 legacy config 目录转换: {}", legacy_db.display());
+        let db = morroc_converter::convert_legacy_db(legacy_db)?;
         write_database(&db, &cli.out_dir, &cli.format)?;
         info!(
             "转换完成: {} 个道具, {} 个怪物, {} 个技能, {} 个 NPC",
@@ -77,10 +77,10 @@ fn main() -> anyhow::Result<()> {
             db.skills.len(),
             db.npcs.len()
         );
-    } else if let Some(rathena) = &cli.rathena {
-        info!("从 rAthena 目录转换: {}", rathena.display());
-        let db_dir = find_rathena_db_dir(rathena)?;
-        let db = morroc_converter::rathena::convert_database_dir(&db_dir)?;
+    } else if let Some(yaml_db) = &cli.yaml_db {
+        info!("从 YAML 数据库目录转换: {}", yaml_db.display());
+        let db_dir = find_yaml_db_dir(yaml_db)?;
+        let db = morroc_converter::yaml_db::convert_database_dir(&db_dir)?;
         write_database(&db, &cli.out_dir, &cli.format)?;
         info!(
             "转换完成: {} 个道具, {} 个怪物, {} 个技能",
@@ -113,8 +113,8 @@ fn main() -> anyhow::Result<()> {
             format
         );
         match format {
-            SourceFormat::HerculesRepo => {
-                let db = morroc_converter::convert_hercules(input_dir)?;
+            SourceFormat::LegacyRepo => {
+                let db = morroc_converter::convert_legacy_db(input_dir)?;
                 write_database(&db, &cli.out_dir, &cli.format)?;
                 info!(
                     "转换完成: {} 个道具, {} 个怪物, {} 个技能, {} 个 NPC",
@@ -124,7 +124,7 @@ fn main() -> anyhow::Result<()> {
                     db.npcs.len()
                 );
             }
-            SourceFormat::HerculesDb => {
+            SourceFormat::LegacyDb => {
                 let db = morroc_converter::convert_database_dir(input_dir)?;
                 write_database(&db, &cli.out_dir, &cli.format)?;
                 info!(
@@ -134,9 +134,9 @@ fn main() -> anyhow::Result<()> {
                     db.skills.len()
                 );
             }
-            SourceFormat::RathenaRepo => {
-                let db_dir = find_rathena_db_dir(input_dir)?;
-                let db = morroc_converter::rathena::convert_database_dir(&db_dir)?;
+            SourceFormat::YamlRepo => {
+                let db_dir = find_yaml_db_dir(input_dir)?;
+                let db = morroc_converter::yaml_db::convert_database_dir(&db_dir)?;
                 write_database(&db, &cli.out_dir, &cli.format)?;
                 info!(
                     "转换完成: {} 个道具, {} 个怪物, {} 个技能",
@@ -145,8 +145,8 @@ fn main() -> anyhow::Result<()> {
                     db.skills.len()
                 );
             }
-            SourceFormat::RathenaDb => {
-                let db = morroc_converter::rathena::convert_database_dir(input_dir)?;
+            SourceFormat::YamlDb => {
+                let db = morroc_converter::yaml_db::convert_database_dir(input_dir)?;
                 write_database(&db, &cli.out_dir, &cli.format)?;
                 info!(
                     "转换完成: {} 个道具, {} 个怪物, {} 个技能",
@@ -171,21 +171,21 @@ fn main() -> anyhow::Result<()> {
 /// 输入目录格式。
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum SourceFormat {
-    HerculesRepo,
-    HerculesDb,
-    RathenaRepo,
-    RathenaDb,
+    LegacyRepo,
+    LegacyDb,
+    YamlRepo,
+    YamlDb,
     NpcOnly,
 }
 
 /// 自动检测输入目录的数据格式。
 ///
 /// 检测顺序：
-/// 1. `db/re/item_db.conf` 或 `db/pre-re/item_db.conf` → Hercules 仓库
-/// 2. `db/re/item_db.yml` 或 `db/pre-re/item_db.yml` → rAthena 仓库
-/// 3. `db/item_db.yml` → rAthena 仓库
-/// 4. 当前目录 `item_db.conf` → Hercules 数据库
-/// 5. 当前目录 `item_db.yml` → rAthena 数据库
+/// 1. `db/re/item_db.conf` 或 `db/pre-re/item_db.conf` → legacy config 仓库
+/// 2. `db/re/item_db.yml` 或 `db/pre-re/item_db.yml` → YAML 数据库仓库
+/// 3. `db/item_db.yml` → YAML 数据库仓库
+/// 4. 当前目录 `item_db.conf` → legacy config 数据库
+/// 5. 当前目录 `item_db.yml` → YAML 数据库
 /// 6. 存在 `npc/` 目录 → NPC 脚本
 fn detect_source_format(dir: &std::path::Path) -> anyhow::Result<SourceFormat> {
     let db_re = dir.join("db/re");
@@ -193,34 +193,34 @@ fn detect_source_format(dir: &std::path::Path) -> anyhow::Result<SourceFormat> {
     let db = dir.join("db");
 
     if db_re.join("item_db.conf").exists() || db_pre.join("item_db.conf").exists() {
-        return Ok(SourceFormat::HerculesRepo);
+        return Ok(SourceFormat::LegacyRepo);
     }
     if db_re.join("item_db.yml").exists() || db_pre.join("item_db.yml").exists() {
-        return Ok(SourceFormat::RathenaRepo);
+        return Ok(SourceFormat::YamlRepo);
     }
     if db.join("item_db.yml").exists() {
-        return Ok(SourceFormat::RathenaRepo);
+        return Ok(SourceFormat::YamlRepo);
     }
     if dir.join("item_db.conf").exists() {
-        return Ok(SourceFormat::HerculesDb);
+        return Ok(SourceFormat::LegacyDb);
     }
     if dir.join("item_db.yml").exists() {
-        return Ok(SourceFormat::RathenaDb);
+        return Ok(SourceFormat::YamlDb);
     }
     if dir.join("npc").is_dir() {
         return Ok(SourceFormat::NpcOnly);
     }
 
     anyhow::bail!(
-        "无法识别 {} 的数据格式，请使用 --hercules 或 --rathena 显式指定",
+        "无法识别 {} 的数据格式，请使用 --legacy-db 或 --yaml-db 显式指定",
         dir.display()
     )
 }
 
-/// 定位 rAthena 数据库目录。
+/// 定位 YAML 数据库目录。
 ///
 /// 优先顺序：db/re/、db/pre-re/、db/、根目录。
-fn find_rathena_db_dir(root: &std::path::Path) -> anyhow::Result<std::path::PathBuf> {
+fn find_yaml_db_dir(root: &std::path::Path) -> anyhow::Result<std::path::PathBuf> {
     for sub in ["db/re", "db/pre-re", "db"] {
         let candidate = root.join(sub);
         if candidate.join("item_db.yml").exists() {
@@ -231,7 +231,7 @@ fn find_rathena_db_dir(root: &std::path::Path) -> anyhow::Result<std::path::Path
         return Ok(root.to_path_buf());
     }
     Err(anyhow::anyhow!(
-        "无法定位 rAthena 数据库目录: {} 及其 db/re、db/pre-re、db 子目录中均不存在 item_db.yml",
+        "无法定位 YAML 数据库目录: {} 及其 db/re、db/pre-re、db 子目录中均不存在 item_db.yml",
         root.display()
     ))
 }
@@ -264,46 +264,40 @@ mod tests {
     use super::*;
 
     #[test]
-    fn detect_hercules_repo() {
+    fn detect_legacy_repo() {
         let tmp = tempfile::tempdir().unwrap();
         let root = tmp.path();
         fs::create_dir_all(root.join("db/re")).unwrap();
         fs::write(root.join("db/re/item_db.conf"), "item_db: ()").unwrap();
         assert_eq!(
             detect_source_format(root).unwrap(),
-            SourceFormat::HerculesRepo
+            SourceFormat::LegacyRepo
         );
     }
 
     #[test]
-    fn detect_rathena_repo() {
+    fn detect_yaml_repo() {
         let tmp = tempfile::tempdir().unwrap();
         let root = tmp.path();
         fs::create_dir_all(root.join("db/re")).unwrap();
         fs::write(root.join("db/re/item_db.yml"), "Body: []").unwrap();
-        assert_eq!(
-            detect_source_format(root).unwrap(),
-            SourceFormat::RathenaRepo
-        );
+        assert_eq!(detect_source_format(root).unwrap(), SourceFormat::YamlRepo);
     }
 
     #[test]
-    fn detect_hercules_db() {
+    fn detect_legacy_db() {
         let tmp = tempfile::tempdir().unwrap();
         let root = tmp.path();
         fs::write(root.join("item_db.conf"), "item_db: ()").unwrap();
-        assert_eq!(
-            detect_source_format(root).unwrap(),
-            SourceFormat::HerculesDb
-        );
+        assert_eq!(detect_source_format(root).unwrap(), SourceFormat::LegacyDb);
     }
 
     #[test]
-    fn detect_rathena_db() {
+    fn detect_yaml_db() {
         let tmp = tempfile::tempdir().unwrap();
         let root = tmp.path();
         fs::write(root.join("item_db.yml"), "Body: []").unwrap();
-        assert_eq!(detect_source_format(root).unwrap(), SourceFormat::RathenaDb);
+        assert_eq!(detect_source_format(root).unwrap(), SourceFormat::YamlDb);
     }
 
     #[test]
@@ -315,19 +309,19 @@ mod tests {
     }
 
     #[test]
-    fn find_rathena_db_dir_re() {
+    fn find_yaml_db_dir_re() {
         let tmp = tempfile::tempdir().unwrap();
         let root = tmp.path();
         fs::create_dir_all(root.join("db/re")).unwrap();
         fs::write(root.join("db/re/item_db.yml"), "Body: []").unwrap();
-        assert_eq!(find_rathena_db_dir(root).unwrap(), root.join("db/re"));
+        assert_eq!(find_yaml_db_dir(root).unwrap(), root.join("db/re"));
     }
 
     #[test]
-    fn find_rathena_db_dir_db() {
+    fn find_yaml_db_dir_db() {
         let tmp = tempfile::tempdir().unwrap();
         let root = tmp.path();
         fs::write(root.join("item_db.yml"), "Body: []").unwrap();
-        assert_eq!(find_rathena_db_dir(root).unwrap(), root.to_path_buf());
+        assert_eq!(find_yaml_db_dir(root).unwrap(), root.to_path_buf());
     }
 }

@@ -1,4 +1,4 @@
-//! Hercules libconfig 解析器。
+//! Legacy libconfig 解析器。
 //!
 //! 支持解析 `.conf` 数据库文件（item_db.conf、mob_db.conf、skill_db.conf）
 //! 和 `npc/scripts.conf` 等清单文件。
@@ -411,7 +411,7 @@ fn tokenize(source: &str) -> Result<Vec<Token>, ParseError> {
             continue;
         }
 
-        // 数字或 Hercules 扩展标识符（如 1HSwords）
+        // 数字或 legacy libconfig 扩展标识符（如 1HSwords）
         if c.is_ascii_digit() || (c == '-' && i + 1 < chars.len() && chars[i + 1].is_ascii_digit())
         {
             let start = i;
@@ -425,7 +425,7 @@ fn tokenize(source: &str) -> Result<Vec<Token>, ParseError> {
                 }
                 i += 1;
             }
-            // Hercules 允许以数字开头的标识符（如 1HSwords、2HSwords）
+            // legacy libconfig 允许以数字开头的标识符（如 1HSwords、2HSwords）
             if i < chars.len() && (chars[i].is_alphabetic() || chars[i] == '_') {
                 while i < chars.len() && (chars[i].is_alphanumeric() || chars[i] == '_') {
                     i += 1;

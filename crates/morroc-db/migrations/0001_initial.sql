@@ -1,5 +1,5 @@
 -- Morroc 初始数据库结构（SQLite）
--- 基于 Hercules 实体设计，但使用 SQLite 原生语法。
+-- 基于 Ragnarok Online 服务端通用实体设计，但使用 SQLite 原生语法。
 
 -- 账户表
 CREATE TABLE IF NOT EXISTS login (

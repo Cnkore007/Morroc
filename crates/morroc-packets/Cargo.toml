@@ -7,9 +7,6 @@ license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
 
-[build-dependencies]
-regex = "1.11"
-
 [dependencies]
 anyhow = "1.0"
 bytes = "1.10"

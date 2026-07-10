@@ -1,4 +1,4 @@
-//! Hercules NPC 脚本解析器。
+//! Legacy NPC 脚本解析器。
 //!
 //! NPC 脚本格式：每行 tab 分隔为 4 个字段：
 //! `<map>,<x>,<y>,<facing>\t<type>\t<name>\t<sprite>[,{<script body>}]`
